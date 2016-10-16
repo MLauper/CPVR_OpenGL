@@ -18,8 +18,8 @@ set(CMAKE_MODULE_PATH "${CMAKE_HOME_DIRECTORY}/_CMAKE;${CMAKE_MODULE_PATH}")
 
 
 # macro to force the build directory to be different from source directory
-include(MACRO_ENSURE_OUT_OF_SOURCE_BUILD)
-ENSURE_OUT_OF_SOURCE_BUILD("${PROJECT_NAME} requires an out of source build.")
+#include(MACRO_ENSURE_OUT_OF_SOURCE_BUILD)
+#ENSURE_OUT_OF_SOURCE_BUILD("${PROJECT_NAME} requires an out of source build.")
 
 
 # macro to to loop over all project directories
