@@ -42,13 +42,17 @@ GLenum POLYGON_DRAW = GL_FILL;
 const float WIDTH = 5.0f;		// ground = width * 2
 const float HEIGHT = 3.0f;		// height of roof
 
+GLuint vao[2] = {};
+GLuint vbo[2] = {};
 
+GLfloat ground_vertices[4] = {};
+GLfloat house_vertices[8] = {};
 
 void glutDisplayCB(void)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 {
 	// clear window background
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// get trackball transformation matrix
 	glm::mat4 model(1.0f);
@@ -61,22 +65,68 @@ void glutDisplayCB(void)
 	// definition of ground face indices (for GL_TRIANGLES --> 6)
 	static GLushort ground_indices[] =
 	{
-		0, 3, 2, 
+		0, 3, 2,
 		1, 0, 2
 	};
 
-	// dereferencing the vertices and draw the geometry using glDrawElements
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, &ground_indices[0]);
+	static GLushort house_indices[] =
+	{
+		0, 7, 3,
+		0, 4, 7,
+		0, 5, 4,
+		0, 1, 5,
+		1, 2, 6,
+		1, 6, 5,
+		2, 3, 7,
+		2, 7, 6,
+		5, 6, 7,
+		5, 7, 4
+	};
+
+	GLuint vecColor;
+	GLuint vecPosition;
+
+
+	glBindVertexArray(vao[0]);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
+	vecPosition = glGetAttribLocation(PROGRAM_ID, "vecPosition");
+	vecColor = glGetAttribLocation(PROGRAM_ID, "vecColor");
+	
+	glVertexAttribPointer(vecPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(NULL));
+	glEnableVertexAttribArray(vecPosition);
+
+	glVertexAttribPointer(vecColor, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(ground_vertices)));
+	glEnableVertexAttribArray(vecColor);
+
+	glDrawElements(GL_TRIANGLES, sizeof(ground_indices), GL_UNSIGNED_SHORT, &ground_indices[0]);
+
+
+	glBindVertexArray(vao[1]);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
+	vecColor = glGetAttribLocation(PROGRAM_ID, "vecColor");
+	vecPosition = glGetAttribLocation(PROGRAM_ID, "vecPosition");
+
+	glVertexAttribPointer(vecPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(NULL));
+	glEnableVertexAttribArray(vecPosition);
+
+	glVertexAttribPointer(vecColor, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(house_vertices)));
+	glEnableVertexAttribArray(vecColor);
+
+	glDrawElements(GL_TRIANGLES, sizeof(house_indices), GL_UNSIGNED_SHORT, &house_indices[0]);
+	
 
 	glutSwapBuffers();
 	UtilGLSL::checkOpenGLErrorCode();
 }
 
 
-
 void initModel(float witdth, float heigth)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 {
+
+	glClearColor(0.0f, 0.0f, 1.0f, 0.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 	// define ground vertices
 	GLfloat ground_vertices[] =
 	{
@@ -84,6 +134,18 @@ void initModel(float witdth, float heigth)
 		 witdth, -witdth, 0.0f, 1.0f,  // v1
 		 witdth,  witdth, 0.0f, 1.0f,  // v2
 		-witdth,  witdth, 0.0f, 1.0f   // v3
+	};
+
+	GLfloat house_vertices[] =
+	{
+		-witdth / 2,	-witdth / 2,	0.0f,	1.0f,  // v0
+		witdth / 2,		-witdth / 2,	0.0f,	1.0f,  // v1
+		witdth / 2,		witdth / 2,		0.0f,	1.0f,  // v2
+		-witdth / 2,	witdth / 2,		0.0f,	1.0f,  // v3
+		-witdth/2,		-witdth/2,		heigth, 1.0f,  // v4
+		witdth/2,		-witdth/2,		heigth, 1.0f,  // v5
+		witdth/2,		witdth/2,		heigth, 1.0f,  // v6
+		-witdth/2,		witdth/2,		heigth, 1.0f   // v7
 	};
 
 	// definition of the colors, each vertex has his own color definition (RGB)
@@ -95,31 +157,36 @@ void initModel(float witdth, float heigth)
 		0.0f, 0.4f, 0.0f
 	};
 
+	GLfloat house_colors[] =
+	{
+		1.0f, 0.0f, 0.0f,
+		1.0f, 0.0f, 0.0f,
+		1.0f, 0.0f, 0.0f,
+		1.0f, 0.0f, 0.0f,
+		1.0f, 0.0f, 0.0f,
+		1.0f, 0.0f, 0.0f,
+		1.0f, 0.0f, 0.0f,
+		1.0f, 0.0f, 0.0f
+	};
 
 	// setup and bind Vertex Array Object for plane
-	GLuint vao;
-	glGenVertexArrays(1, &vao);	
-	glBindVertexArray(vao);
-
+	glGenVertexArrays(2, vao);
+	
 	// setup Vertex Buffer Object
-	GLuint vbo;
-	glGenBuffers(1, &vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBindVertexArray(vao[0]);
+	glGenBuffers(1, &vbo[0]);
+	
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(ground_vertices) + sizeof(ground_colors), NULL, GL_STATIC_DRAW);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(ground_vertices), ground_vertices);
 	glBufferSubData(GL_ARRAY_BUFFER, sizeof(ground_vertices), sizeof(ground_colors), ground_colors);
 
-	// get vertex position attribute location and setup vertex attribute pointer
-	// (requires that the shader program has been compiled already!)
-	GLuint vecPosition = glGetAttribLocation(PROGRAM_ID, "vecPosition");
-	glVertexAttribPointer(vecPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
-	glEnableVertexAttribArray(vecPosition);
-	
-	// get vertex color attribute location and setup vertex attribute pointer
-	// (requires that the shader program has been compiled already!)
-	GLuint vecColor = glGetAttribLocation(PROGRAM_ID, "vecColor");
-	glVertexAttribPointer(vecColor, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(ground_vertices)));
-	glEnableVertexAttribArray(vecColor);
+	glBindVertexArray(vao[1]);
+	glGenBuffers(1, &vbo[1]);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(house_vertices) + sizeof(house_colors), NULL, GL_STATIC_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(house_vertices), house_vertices);
+	glBufferSubData(GL_ARRAY_BUFFER, sizeof(house_vertices), sizeof(house_colors), house_colors);
 }
 
 
@@ -128,12 +195,12 @@ void initRendering()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 {
 	// set background color
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClearColor(0.2f, 0.4f, 0.0f, 0.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glPolygonMode(POLYGON_MODE, GL_FILL);
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
 
 	// get and setup orthographic projection matrix
 	glm::mat4 projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, -10.0f, 10.0f);
@@ -298,7 +365,7 @@ int main(int argc, char *argv[])
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 {
 	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | FL_OPENGL3);
+	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH | FL_OPENGL3);
 	glutInitWindowPosition(100, 100);
 	glutInitWindowSize(640, 640);
 	glutCreateWindow("3D House");
