@@ -98,7 +98,7 @@ void glutDisplayCB(void)
 	glVertexAttribPointer(vecColor, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(ground_vertices)));
 	glEnableVertexAttribArray(vecColor);
 
-	glDrawElements(GL_TRIANGLES, sizeof(ground_indices), GL_UNSIGNED_SHORT, &ground_indices[0]);
+	glDrawElements(GL_TRIANGLES, sizeof(ground_indices) / sizeof(ground_indices[0]), GL_UNSIGNED_SHORT, &ground_indices[0]);
 
 
 	glBindVertexArray(vao[1]);
@@ -112,7 +112,7 @@ void glutDisplayCB(void)
 	glVertexAttribPointer(vecColor, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(house_vertices)));
 	glEnableVertexAttribArray(vecColor);
 
-	glDrawElements(GL_TRIANGLES, sizeof(house_indices), GL_UNSIGNED_SHORT, &house_indices[0]);
+	glDrawElements(GL_TRIANGLES, sizeof(house_indices) / sizeof(house_indices[0]), GL_UNSIGNED_SHORT, &house_indices[0]);
 	
 
 	glutSwapBuffers();
