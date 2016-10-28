@@ -8,6 +8,7 @@
 #include <iostream>
 #include <string>
 #include <stack>
+#include <math.h>
 using namespace std;
 
 
@@ -44,7 +45,13 @@ string MENU_ENTRY_STR[3];
 Sphere MySphere;
 float SUN_ROTATION = 0.0f;
 
-bool ANIMATION_RUNNING = false;
+Sphere MySecondPlanet;
+float MySecondPlanet_ROTATION = 0.0f;
+
+Sphere MoonOfSecondPlanet;
+float MOON_ROTATION = 0.0f;
+
+bool ANIMATION_RUNNING = true;
 int SPEED = 20;
 
 
@@ -81,6 +88,26 @@ void glutDisplayCB(void)
 		glUniformMatrix4fv(MV_MAT4_LOCATION, 1, GL_FALSE, glm::value_ptr(model));
 		glUniform3f(COLOR_VEC3_LOCATION, 1.0, 1.0, 0.0);
 		MySphere.draw();
+
+	// draw second planet ////////////////////////////////////////////////////
+		model = glm::scale(model, glm::vec3(-1.0f, -1.0f, -1.0f));
+		MySecondPlanet_ROTATION += SPEED * 0.1;
+		MySecondPlanet_ROTATION = fmod(MySecondPlanet_ROTATION,360.0f);
+		model = glm::rotate(model, glm::radians<float>(MySecondPlanet_ROTATION), glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::translate(model, glm::vec3(4.0f, 0.0f, 0.0f));
+		glUniformMatrix4fv(MV_MAT4_LOCATION, 1, GL_FALSE, glm::value_ptr(model));
+		glUniform3f(COLOR_VEC3_LOCATION, 1.0, 1.0, 0.0);
+		MySecondPlanet.draw();
+	
+	// draw moon of second planet ////////////////////////////////////////////////////
+		model = glm::scale(model, glm::vec3(-0.5f, -0.5f, -0.5f));
+		MOON_ROTATION += SPEED * 0.4;
+		MOON_ROTATION = fmod(MOON_ROTATION, 360.0f);
+		model = glm::rotate(model, glm::radians<float>(MOON_ROTATION), glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::translate(model, glm::vec3(3.0f, 0.0f, 0.0f));
+		glUniformMatrix4fv(MV_MAT4_LOCATION, 1, GL_FALSE, glm::value_ptr(model));
+		glUniform3f(COLOR_VEC3_LOCATION, 1.0, 1.0, 0.0);
+		MySecondPlanet.draw();
 		model = model_view_stack.top();
 	model_view_stack.pop();
 
@@ -97,6 +124,8 @@ void initModel(void)
 	// (requires that the shader program has been compiled already!)
 	GLuint vecPosition = glGetAttribLocation(PROGRAM_ID, "vecPosition");
 	MySphere.init(vecPosition);
+	MySecondPlanet.init(vecPosition);
+	MoonOfSecondPlanet.init(vecPosition);
 }
 
 
@@ -148,6 +177,7 @@ void glutMenuCB(int item)
 		{
 			initMenuChange(1, "Stop Animation", 2);
 			ANIMATION_RUNNING = true;
+			glutTimerFunc(SPEED, glutTimerCB, 0);
 			break;
 		}
 		case 2:
