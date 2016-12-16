@@ -168,6 +168,14 @@ void initRendering()
 	glUniform1i(location, true);
 
 	// ToDo: load textures from files
+	for (int i = 0; i < 74; ++i)
+	{
+		std::ostringstream oss;
+		oss << "yoda-";
+		oss << std::setfill('0') << std::setw(3) << i;
+		oss << ".png";
+		oss.str();
+	}
 
 }
 
